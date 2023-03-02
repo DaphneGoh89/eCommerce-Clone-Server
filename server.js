@@ -4,6 +4,7 @@ const cors = require("cors");
 const pool = require("./db/db");
 const userRouter = require("./router/user.js");
 const orderRouter = require("./router/order.js");
+const productRouter = require("./router/product.js");
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/user", userRouter);
 app.use("/order", orderRouter);
+app.use("/product", productRouter);
 
 // Port listening
 const PORT = process.env.PORT || 5005;
