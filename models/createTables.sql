@@ -104,3 +104,61 @@ CREATE TABLE IF NOT EXISTS "product_image"
         FOREIGN KEY("product_color")
             REFERENCES "product_color"("code")       
     );
+
+
+-- Order
+CREATE TABLE IF NOT EXISTS "order" 
+  ("id" SERIAL NOT NULL,
+    "customer_id" INTEGER,
+    "first_name" VARCHAR(255),
+    "last_name" VARCHAR(255),
+    "order_date" DATE DEFAULT CURRENT_DATE,
+    "order_currency" VARCHAR(3),
+    "order_total" NUMERIC(13,2) DEFAULT 0,
+    "giftcard" VARCHAR(30),
+    "promocode" VARCHAR(30),
+    "giftcard_value" NUMERIC(13,2),
+    "promocode_value" NUMERIC(13,2),
+    "shipping_fee" NUMERIC(13,2),
+    "gst_amount" NUMERIC(13,2),
+    "shipto_country" VARCHAR(2),
+    "shipto_addrline1" VARCHAR(255),
+    "shipto_addrline2" VARCHAR(255),
+    "shipto_postal" VARCHAR(20),
+    "contact_ctrycode" VARCHAR(10),
+    "contact_number" VARCHAR(30),
+    "delivery_method" VARCHAR(1),
+    "delivery_timing" VARCHAR(1),
+    "payment_method" VARCHAR(10),
+    "payment_amount" NUMERIC(13,2),
+    "order_status" VARCHAR(1),
+    PRIMARY KEY ("id"),
+    CONSTRAINT "fk_users"
+        FOREIGN KEY("customer_id")
+            REFERENCES "users"("user_id")     
+    );
+
+  -- Order Line
+CREATE TABLE IF NOT EXISTS "order_line" 
+  ("order_id" INTEGER NOT NULL,
+  "line_num" INTEGER NOT NULL,
+    "product_code" VARCHAR(20),
+    "product_name" VARCHAR(150),
+    "product_color" VARCHAR(3),
+    "product_size" VARCHAR(10),
+    "order_qty" INTEGER,
+    "unit_price" NUMERIC(13,2),
+    "line_total" NUMERIC(13,2),
+    "line_status" VARCHAR(1),
+    PRIMARY KEY ("order_id", "line_num"),
+    CONSTRAINT "fk_product"
+        FOREIGN KEY("product_code")
+            REFERENCES "product"("code"),
+    CONSTRAINT "fk_product_color"
+        FOREIGN KEY("product_color")
+            REFERENCES "product_color"("code"),
+    CONSTRAINT "fk_order_id"
+        FOREIGN KEY("order_id")
+            REFERENCES "order"("id")       
+    );
+
