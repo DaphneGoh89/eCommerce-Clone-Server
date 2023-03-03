@@ -94,6 +94,8 @@ CREATE TABLE IF NOT EXISTS "product_image"
     "product_code" VARCHAR(20),
     "product_color" VARCHAR(3),
     "image_path" VARCHAR(255),
+    "main_display" BOOLEAN DEFAULT FALSE,
+    "hover_display" BOOLEAN DEFAULT FALSE,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_product"
         FOREIGN KEY("product_code")
