@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS "users"
 )
 
 
-
 -- Product Main Category
 CREATE TABLE IF NOT EXISTS "product_main_category" 
   ("code" VARCHAR(3) NOT NULL, 
@@ -108,6 +107,7 @@ CREATE TABLE IF NOT EXISTS "product_image"
     "image_path" VARCHAR(255),
     "main_display" BOOLEAN DEFAULT FALSE,
     "hover_display" BOOLEAN DEFAULT FALSE,
+    "cart_display" BOOLEAN DEFAULT FALSE,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_product"
         FOREIGN KEY("product_code")

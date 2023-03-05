@@ -79,12 +79,12 @@ const getSingleProduct = async (req, res) => {
     };
 
     // Return success JSON response
-    res.status(200).json({
+    return res.status(200).json({
       ...result,
     });
   } catch (err) {
     // Return error response
-    res.status(400).json({
+    return res.status(400).json({
       status: "Error",
       message: `Product not found. ${err.message}`,
     });
@@ -168,10 +168,10 @@ const getAllProducts = async (req, res) => {
     });
 
     // Return success JSON response with products array
-    res.status(200).json(finalResult);
+    return res.status(200).json(finalResult);
   } catch (err) {
     // Return error response
-    res.status(400).json({
+    return res.status(400).json({
       status: "Error",
       message: `Error. ${err.message}`,
     });
