@@ -47,6 +47,7 @@ const userSignup = async (req, res) => {
 // 4. create and return access_token
 const userLogin = async (req, res) => {
   try {
+    console.log("userLogin", req);
     const { email, password } = req.body;
     const user = await pool.query("SELECT * FROM users WHERE LOWER(email)=$1", [
       email.toLowerCase(),
@@ -71,6 +72,7 @@ const userLogin = async (req, res) => {
     // create token payload
     const payload = {
       email: user.rows[0].email,
+      firstName: user.rows[0].first_name,
     };
 
     // sign access token

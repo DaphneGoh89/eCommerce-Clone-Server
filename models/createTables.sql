@@ -1,4 +1,16 @@
 
+-- Users
+CREATE TABLE IF NOT EXISTS "users"
+(
+    "user_id" SERIAL NOT NULL,
+    "email" VARCHAR(255),
+    "password" VARCHAR(255),
+    "first_name" VARCHAR(100),
+    "last_name" VARCHAR(100),
+    PRIMARY KEY ("user_id")
+)
+
+
 
 -- Product Main Category
 CREATE TABLE IF NOT EXISTS "product_main_category" 
@@ -162,3 +174,24 @@ CREATE TABLE IF NOT EXISTS "order_line"
             REFERENCES "order"("id")       
     );
 
+
+-- Cart
+CREATE TABLE IF NOT EXISTS "cart" 
+  ("id" SERIAL NOT NULL,
+    "customer_id" INTEGER,
+    "product_code" VARCHAR(20),
+    "product_name" VARCHAR(150),
+    "product_color" VARCHAR(3),
+    "product_size" VARCHAR(10),
+    "quantity" INTEGER,
+    PRIMARY KEY ("id"),
+    CONSTRAINT "fk_users"
+        FOREIGN KEY("customer_id")
+            REFERENCES "users"("user_id"),
+    CONSTRAINT "fk_product"
+        FOREIGN KEY("product_code")
+            REFERENCES "product"("code"),
+    CONSTRAINT "fk_product_color"
+        FOREIGN KEY("product_color")
+            REFERENCES "product_color"("code")       
+    );
