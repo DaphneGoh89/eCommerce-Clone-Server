@@ -17,6 +17,10 @@ const addToCart = async (req, res) => {
 
     // Begin insert queries
     await pool.query("BEGIN");
+    const colorCode = await pool.query(
+      `SELECT code FROM product_color WHERE hex_color=$1`,
+      [productColor]
+    );
 
     // Insert into "cart" table
     const addToCart = `INSERT INTO "cart" ("customer_id", "product_code", "product_name", "product_color", "product_size", "quantity") 
@@ -25,7 +29,7 @@ const addToCart = async (req, res) => {
       customerId,
       productCode,
       productName,
-      productColor,
+      colorCode.rows[0]["code"],
       productSize,
       quantity,
     ]);
@@ -33,16 +37,16 @@ const addToCart = async (req, res) => {
     await pool.query("COMMIT");
 
     // Return success JSON response
-    res.status(200).json({
+    return res.status(200).json({
       status: "Success",
-      message: `Product: ${productCode} added to cart successfully. `,
+      message: `${productName} added to cart successfully. `,
     });
   } catch (err) {
     // Perform rollback if error
     await pool.query("ROLLBACK");
 
     // Return error response
-    res.status(400).json({
+    return res.status(400).json({
       status: "Error",
       message: `Fails to add to cart. ${err.message}`,
     });
@@ -88,4 +92,41 @@ const getCartItem = async (req, res) => {
   }
 };
 
-module.exports = { addToCart, getCartItem };
+//----------------------------------------------------------------------------------------------------------------------------
+// REMOVE FROM CART
+const removeFromCart = async (req, res) => {
+  try {
+    // Destructure request body
+    const { customerId, productCode, productName, productColor, productSize } =
+      req.body;
+
+    // Begin queries
+    const colorCode = await pool.query(
+      `SELECT code FROM product_color WHERE hex_color=$1`,
+      [productColor]
+    );
+
+    // Delete from "cart" table
+    const removeFromCart = `DELETE FROM cart WHERE "customer_id"=$1 AND LOWER("product_code")=$2 AND LOWER("product_color")=$3 AND LOWER("product_size")=$4`;
+    const response = await pool.query(removeFromCart, [
+      customerId,
+      productCode.toLowerCase(),
+      colorCode.rows[0]["code"].toLowerCase(),
+      productSize.toLowerCase(),
+    ]);
+
+    // Return success JSON response
+    return res.status(200).json({
+      status: "Success",
+      message: `${productName} remove from cart successfully. `,
+    });
+  } catch (err) {
+    // Return error response
+    return res.status(400).json({
+      status: "Error",
+      message: `Fails to remove item from cart. ${err.message}`,
+    });
+  }
+};
+
+module.exports = { addToCart, getCartItem, removeFromCart };

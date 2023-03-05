@@ -178,12 +178,12 @@ CREATE TABLE IF NOT EXISTS "order_line"
 -- Cart
 CREATE TABLE IF NOT EXISTS "cart" 
   ("id" SERIAL NOT NULL,
-    "customer_id" INTEGER,
-    "product_code" VARCHAR(20),
+    "customer_id" INTEGER NOT NULL,
+    "product_code" VARCHAR(20) NOT NULL,
     "product_name" VARCHAR(150),
     "product_color" VARCHAR(3),
     "product_size" VARCHAR(10),
-    "quantity" INTEGER,
+    "quantity" INTEGER NOT NULL,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_users"
         FOREIGN KEY("customer_id")

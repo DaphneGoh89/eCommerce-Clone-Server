@@ -72,6 +72,7 @@ const userLogin = async (req, res) => {
     // create token payload
     const payload = {
       email: user.rows[0].email,
+      userId: user.rows[0].user_id,
       firstName: user.rows[0].first_name,
     };
 
