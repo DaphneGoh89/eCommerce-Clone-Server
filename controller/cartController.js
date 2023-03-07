@@ -62,7 +62,7 @@ const getCartItem = async (req, res) => {
     const getCartItem = `
         SELECT C1.product_code "productCode", P1.name "productName", C1.product_color "productColor", 
                 P2.name "colorName", P2.hex_color "hexColor", C1.product_size "productSize",
-                P3.currency, P3.price "productPrice", SUM(C1.quantity) "quantity",
+                P3.currency, P3.price "productPrice", SUM(C1.quantity) "quantity", P3."price"*SUM(C1."quantity") "lineTotal",
                 (SELECT img.image_path FROM product_image img 
                  WHERE img.product_code = C1.product_code and img.product_color= C1.product_color 
                  ORDER BY LENGTH(img.image_path)
@@ -101,17 +101,17 @@ const removeFromCart = async (req, res) => {
       req.body;
 
     // Begin queries
-    const colorCode = await pool.query(
-      `SELECT code FROM product_color WHERE hex_color=$1`,
-      [productColor]
-    );
+    // const colorCode = await pool.query(
+    //   `SELECT code FROM product_color WHERE hex_color=$1`,
+    //   [productColor]
+    // );
 
     // Delete from "cart" table
     const removeFromCart = `DELETE FROM cart WHERE "customer_id"=$1 AND LOWER("product_code")=$2 AND LOWER("product_color")=$3 AND LOWER("product_size")=$4`;
     const response = await pool.query(removeFromCart, [
       customerId,
       productCode.toLowerCase(),
-      colorCode.rows[0]["code"].toLowerCase(),
+      productColor.toLowerCase(),
       productSize.toLowerCase(),
     ]);
 

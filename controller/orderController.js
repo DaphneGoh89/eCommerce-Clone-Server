@@ -19,14 +19,16 @@ const createOrder = async (req, res) => {
       shiptoCountry,
       shiptoAddrline1,
       shiptoAddrline2,
+      shiptoCity,
+      shiptoState,
       shiptoPostal,
       contactCtrycode,
       contactNumber,
       deliveryMethod,
       deliveryTiming,
+      pickupStore,
       paymentMethod,
       paymentAmount,
-      orderStatus,
       orderDetails,
     } = req.body;
 
@@ -35,9 +37,9 @@ const createOrder = async (req, res) => {
 
     // Insert into "order" table
     const insertOrder = `INSERT INTO "order" ("customer_id", "first_name", "last_name", "order_currency", "order_total", "giftcard", "promocode", 
-        "giftcard_value", "promocode_value", "shipping_fee", "gst_amount", "shipto_country", "shipto_addrline1", "shipto_addrline2",
-        "shipto_postal", "contact_ctrycode", "contact_number", "delivery_method", "delivery_timing", "payment_method", "payment_amount") 
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING id`;
+        "giftcard_value", "promocode_value", "shipping_fee", "gst_amount", "shipto_country", "shipto_addrline1", "shipto_addrline2", "shipto_city", "shipto_state",
+        "shipto_postal", "contact_ctrycode", "contact_number", "delivery_method", "delivery_timing", "pickup_store", "payment_method", "payment_amount") 
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING id, order_date`;
     const response = await pool.query(insertOrder, [
       customerId,
       firstName,
@@ -53,29 +55,77 @@ const createOrder = async (req, res) => {
       shiptoCountry,
       shiptoAddrline1,
       shiptoAddrline2,
+      shiptoCity,
+      shiptoState,
       shiptoPostal,
       contactCtrycode,
       contactNumber,
       deliveryMethod,
       deliveryTiming,
+      pickupStore,
       paymentMethod,
       paymentAmount,
     ]);
 
-    // Insert "order_id" and "line_id" into "orderDetails" from JSON body
+    //-----------------------------------------------------------------------------------------------------------
+    // 1. Insert "order_id" and "line_id" into "orderDetails" from JSON body
     const orderLineParams = orderDetails.map((item, index) => [
-      ...Object.values(item),
+      //...Object.values(item),
+      item["productCode"],
+      item["productName"],
+      item["productColor"],
+      item["productSize"],
+      item["quantity"],
+      item["productPrice"],
+      item["lineTotal"],
       response.rows[0].id,
       index,
     ]);
 
-    // Insert into "order_line" table
-    const insertOrderlines = `INSERT INTO "order_line" (product_code, product_name, product_color, product_size, order_qty, unit_price, line_total, order_id, line_num) VALUES ${expand(
+    //-----------------------------------------------------------------------------------------------------------
+    // 2. Insert into "order_line" table
+    const insertOrderlines = `INSERT INTO "order_line" (product_code, product_name, product_color, product_size, quantity, product_price, line_total, order_id, line_num) VALUES ${expand(
       orderDetails.length,
       9
     )}`;
     const orderLineValues = flatten(orderLineParams);
     await pool.query(insertOrderlines, orderLineValues);
+
+    //-----------------------------------------------------------------------------------------------------------
+    // 3. Insert product into "product_transaction" table - to deduct quantity
+    const insertProdTrans = `INSERT INTO "product_transaction" (transaction_date, product_code, product_size, product_color, location, origin_type, origin_id, quantity, direction) VALUES ${expand(
+      orderDetails.length,
+      9
+    )}`;
+    const prodTransParams = orderDetails.map((item, index) => [
+      response.rows[0]["order_date"],
+      item["productCode"],
+      item["productSize"],
+      item["productColor"],
+      "EC",
+      "OR",
+      response.rows[0].id,
+      -1 * parseInt(item["quantity"]),
+      "O",
+    ]);
+    const prodTransValues = flatten(prodTransParams);
+    await pool.query(insertProdTrans, prodTransValues);
+
+    //-----------------------------------------------------------------------------------------------------------
+    // 4. Delete from cart - remove items from cart after checkout
+    // Get product key to join with cart table - customerId, productCode, productColor, productSize (e.g. 2hy4688031s)
+    let cartItemKey = [];
+    for (let item of orderDetails) {
+      productKey = `${customerId}${item["productCode"]}${item["productColor"]}${item["productSize"]}`;
+      cartItemKey.push(productKey);
+    }
+    const deleteFromCart = `DELETE FROM "cart" WHERE id IN
+                         (SELECT id FROM "cart" WHERE customer_id || product_code || product_color || product_size IN (${expand(
+                           orderDetails.length,
+                           1
+                         )}))`;
+
+    await pool.query(deleteFromCart, cartItemKey);
     await pool.query("COMMIT");
 
     // Return success JSON response
