@@ -9,7 +9,7 @@ const {
 } = require("../controller/userController");
 
 // User endpoints
-router.post("/signup", userSignup);
+router.put("/signup", userSignup);
 
 router.post("/login", userLogin);
 

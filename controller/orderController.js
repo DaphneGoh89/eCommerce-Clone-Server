@@ -132,6 +132,7 @@ const createOrder = async (req, res) => {
     res.status(200).json({
       status: "Success",
       message: `Order: ${response.rows[0].id} created successfully. `,
+      orderid: `${response.rows[0].id}`,
     });
   } catch (err) {
     // Perform rollback if error

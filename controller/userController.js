@@ -30,7 +30,7 @@ const userSignup = async (req, res) => {
 
     res.status(200).json({
       status: "Success",
-      message: `User: ${email} created successfully.`,
+      message: `Account: ${email} created successfully.`,
     });
   } catch (err) {
     res.status(400).json({
@@ -74,6 +74,8 @@ const userLogin = async (req, res) => {
       email: user.rows[0].email,
       userId: user.rows[0].user_id,
       firstName: user.rows[0].first_name,
+      lastName: user.rows[0].last_name,
+      isAdmin: user.rows[0].is_admin,
     };
 
     // sign access token
