@@ -110,7 +110,7 @@ const getCartItem = async (req, res) => {
 
 //----------------------------------------------------------------------------------------------------------------------------
 // EDIT CART ITEM
-// 1. Get customerId, productCode, productColor, productSize and quantity from req
+// 1. Get customerId, productCode, oldProductColor, oldProductSize and oldQuantity, newProductColor, newProductSize, newQuantity from req
 // 2. Delete from "cart" table
 // 3. Insert new line into "cart" table
 const editCartItem = async (req, res) => {
@@ -120,14 +120,23 @@ const editCartItem = async (req, res) => {
       customerId,
       productCode,
       productName,
-      productColor,
-      productSize,
-      quantity,
+      oldProductColor,
+      oldProductSize,
+      oldQuantity,
+      newProductColor,
+      newProductSize,
+      newQuantity,
     } = req.body;
 
-    const colorCode = await pool.query(
+    // Decipher from hexColor to colorCode
+    const oldColorCode = await pool.query(
       `SELECT code FROM product_color WHERE hex_color=$1`,
-      [productColor]
+      [oldProductColor]
+    );
+
+    const newColorCode = await pool.query(
+      `SELECT code FROM product_color WHERE hex_color=$1`,
+      [newProductColor]
     );
 
     // Delete existing item with matching attributes from customer cart
@@ -136,8 +145,8 @@ const editCartItem = async (req, res) => {
       customerId,
       productCode.toLowerCase(),
       // productColor.toLowerCase(),
-      colorCode.rows[0]["code"].toLowerCase(),
-      productSize.toLowerCase(),
+      oldColorCode.rows[0]["code"].toLowerCase(),
+      oldProductSize.toLowerCase(),
     ]);
 
     // Insert edited item into "cart" table
@@ -147,21 +156,21 @@ const editCartItem = async (req, res) => {
       customerId,
       productCode,
       productName,
-      colorCode.rows[0]["code"],
-      productSize,
-      quantity,
+      newColorCode.rows[0]["code"],
+      newProductSize,
+      newQuantity,
     ]);
 
     // Return success JSON response
     return res.status(200).json({
       status: "Success",
-      message: `${productName} remove from cart successfully. `,
+      message: `${productName} edited successfully. `,
     });
   } catch (err) {
     // Return error response
     return res.status(400).json({
       status: "Error",
-      message: `Fails to remove item from cart. ${err.message}`,
+      message: `Fails to edit items in cart. ${err.message}`,
     });
   }
 };
@@ -186,7 +195,7 @@ const removeFromCart = async (req, res) => {
     // Return success JSON response
     return res.status(200).json({
       status: "Success",
-      message: `${productName} remove from cart successfully. `,
+      message: `${productName} removed from cart successfully. `,
     });
   } catch (err) {
     // Return error response
