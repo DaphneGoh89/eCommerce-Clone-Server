@@ -53,6 +53,68 @@ const addToCart = async (req, res) => {
   }
 };
 
+//---------------------------------------------------------------------------------------------------------------------------
+// Add multiple products to cart (i.e. transfer from localStorage into cart after user login)
+const addMultipleToCart = async (req, res) => {
+  try {
+    // Destructure request body
+    let { customerId, cartItems } = req.body;
+
+    // Begin insert queries
+    await pool.query("BEGIN");
+
+    //-----------------------------------------------------------------------------------------------------------
+    // 1. Destructure cartItems array
+    const cartItemParams = cartItems.map((item, index) => [
+      customerId,
+      item["productCode"],
+      item["productName"],
+      item["productColor"],
+      item["productSize"],
+      item["quantity"],
+    ]);
+
+    // Insert into "cart" table
+    const addMultipleToCart = `INSERT INTO "cart" ("customer_id", "product_code", "product_name", "product_hexcolor", "product_size", "quantity") 
+            VALUES ${expand(cartItems.length, 6)} RETURNING id`;
+
+    const cartItemValues = flatten(cartItemParams);
+    const response = await pool.query(addMultipleToCart, cartItemValues);
+    let recordId = [];
+    response.rows.map((record, index) => {
+      recordId.push(record.id);
+    });
+
+    // Update product_color columns for all inserted records
+    const updateColor = `UPDATE cart
+    SET "product_color" = "code"
+    FROM product_color
+    WHERE product_color."hex_color"=cart."product_hexcolor" and cart."id" IN (${expand(
+      response.rows.length,
+      1
+    )})`;
+
+    await pool.query(updateColor, recordId);
+
+    await pool.query("COMMIT");
+
+    // Return success JSON response
+    return res.status(200).json({
+      status: "Success",
+      message: `cartItems added to cart successfully. `,
+    });
+  } catch (err) {
+    // Perform rollback if error
+    await pool.query("ROLLBACK");
+
+    // Return error response
+    return res.status(400).json({
+      status: "Error",
+      message: `Fails to add to cart. ${err.message}`,
+    });
+  }
+};
+
 //----------------------------------------------------------------------------------------------------------------------------
 // GET CART ITEM
 const getCartItem = async (req, res) => {
@@ -206,4 +268,10 @@ const removeFromCart = async (req, res) => {
   }
 };
 
-module.exports = { addToCart, getCartItem, editCartItem, removeFromCart };
+module.exports = {
+  addToCart,
+  addMultipleToCart,
+  getCartItem,
+  editCartItem,
+  removeFromCart,
+};
