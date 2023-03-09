@@ -4,7 +4,6 @@ const pool = require("../db/db");
 // Get Single Product
 const getSingleProduct = async (req, res) => {
   try {
-    console.log("product", req);
     const { productCode } = req.body;
     let result = {};
 

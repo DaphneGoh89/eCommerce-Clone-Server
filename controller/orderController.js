@@ -1,6 +1,7 @@
 const pool = require("../db/db");
 const { expand, flatten } = require("../helpers/helperFunction");
 
+// Create order
 const createOrder = async (req, res) => {
   try {
     // Destructure request body
@@ -129,7 +130,7 @@ const createOrder = async (req, res) => {
     await pool.query("COMMIT");
 
     // Return success JSON response
-    res.status(200).json({
+    return res.status(200).json({
       status: "Success",
       message: `Order: ${response.rows[0].id} created successfully. `,
       orderid: `${response.rows[0].id}`,
@@ -139,11 +140,50 @@ const createOrder = async (req, res) => {
     await pool.query("ROLLBACK");
 
     // Return error response
-    res.status(400).json({
+    return res.status(400).json({
       status: "Error",
       message: `Order creation fails. ${err.message}`,
     });
   }
 };
 
-module.exports = { createOrder };
+// Get all orders - with query string
+const getOrders = async (req, res) => {
+  try {
+    let filter = { ...req.query };
+    console.log("getOrders API", filter);
+    let allOrders = [];
+
+    // Get orders with matching parameters
+    const getAllOrders = `SELECT *
+    FROM "order" T1
+    WHERE T1."order_date" BETWEEN COALESCE($1, CURRENT_DATE) AND COALESCE($2, CURRENT_DATE)
+    AND LOWER(T1."shipto_country")=COALESCE($3, '')
+    AND T1."shipto_postal" BETWEEN $4 AND $5`;
+
+    // Execute queries
+    const orders = await pool.query(getAllOrders, [
+      filter?.orderDateFrom,
+      filter?.orderDateTo,
+      filter?.shiptoCountry,
+      filter?.shiptoPostalFrom,
+      filter?.shiptoPostalTo,
+    ]);
+
+    // Extract general product info
+    // allProducts = [...orders.rows];
+
+    // Return success JSON response with products array
+    return res.status(200).json(orders);
+  } catch (err) {
+    // Return error response
+    return res.status(400).json({
+      status: "Error",
+      message: `Error. ${err.message}`,
+    });
+  }
+};
+
+// Get individual customer order
+
+module.exports = { createOrder, getOrders };

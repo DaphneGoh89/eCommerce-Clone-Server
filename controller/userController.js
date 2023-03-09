@@ -80,7 +80,7 @@ const userLogin = async (req, res) => {
 
     // sign access token
     const access_token = jwt.sign(payload, process.env.ACCESS_SECRET, {
-      expiresIn: "60m",
+      expiresIn: "1D",
       jwtid: uuidv4(),
     });
 
@@ -91,9 +91,9 @@ const userLogin = async (req, res) => {
     });
 
     // return access and refresh tokens upon successful login
-    res.status(200).json({ access_token, refresh_token });
+    return res.status(200).json({ access_token, refresh_token });
   } catch (err) {
-    res.status(400).json({
+    return res.status(400).json({
       status: "Error",
       message: `Internal server error. ${err.message}`,
     });

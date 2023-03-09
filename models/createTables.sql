@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS "order"
     "pickup_store" VARCHAR(20),
     "payment_method" VARCHAR(10),
     "payment_amount" NUMERIC(13,2),
-    "order_status" VARCHAR(1),
+    "order_status" VARCHAR(1) DEFAULT 'O',
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_users"
         FOREIGN KEY("customer_id")

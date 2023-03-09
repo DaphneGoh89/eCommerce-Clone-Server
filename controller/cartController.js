@@ -111,7 +111,7 @@ const getCartItem = async (req, res) => {
 //----------------------------------------------------------------------------------------------------------------------------
 // EDIT CART ITEM
 // 1. Get customerId, productCode, oldProductColor, oldProductSize and oldQuantity, newProductColor, newProductSize, newQuantity from req
-// 2. Delete from "cart" table
+// 2. Delete from old item from "cart" table
 // 3. Insert new line into "cart" table
 const editCartItem = async (req, res) => {
   try {
