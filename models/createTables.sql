@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS "product"
 -- Product Price
 CREATE TABLE IF NOT EXISTS "product_price" 
   ("id" SERIAL NOT NULL,
-    "product_code" VARCHAR(20),
+    "product_code" VARCHAR(20) NOT NULL,
     "date_from" DATE,
     "date_to" DATE,
     "currency" VARCHAR(3) NOT NULL,
@@ -82,14 +82,14 @@ CREATE TABLE IF NOT EXISTS "product_price"
 -- Product Transaction
 CREATE TABLE IF NOT EXISTS "product_transaction" 
   ("id" SERIAL NOT NULL,
-    "product_code" VARCHAR(20),
+    "product_code" VARCHAR(20) NOT NULL,
     "product_size" VARCHAR(10),
     "product_color" VARCHAR(3),
     "location" VARCHAR(30),
-    "transaction_date" DATE,
-    "origin_type" VARCHAR(2),
-    "origin_id" INTEGER,
-    "quantity" INTEGER DEFAULT 0,
+    "transaction_date" DATE NOT NULL,
+    "origin_type" VARCHAR(2) NOT NULL,
+    "origin_id" INTEGER NOT NULL,
+    "quantity" INTEGER DEFAULT 0 NOT NULL,
     "direction" VARCHAR(1),
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_product"
@@ -103,9 +103,9 @@ CREATE TABLE IF NOT EXISTS "product_transaction"
 -- Product Image
 CREATE TABLE IF NOT EXISTS "product_image" 
   ("id" SERIAL NOT NULL,
-    "product_code" VARCHAR(20),
+    "product_code" VARCHAR(20) NOT NULL,
     "product_color" VARCHAR(3),
-    "image_path" VARCHAR(255),
+    "image_path" VARCHAR(255) NOT NULL,
     "main_display" BOOLEAN DEFAULT FALSE,
     "hover_display" BOOLEAN DEFAULT FALSE,
     "cart_display" BOOLEAN DEFAULT FALSE,
@@ -122,11 +122,11 @@ CREATE TABLE IF NOT EXISTS "product_image"
 -- Order
 CREATE TABLE IF NOT EXISTS "order" 
   ("id" SERIAL NOT NULL,
-    "customer_id" INTEGER,
+    "customer_id" INTEGER NOT NULL,
     "first_name" VARCHAR(255),
     "last_name" VARCHAR(255),
     "order_date" DATE DEFAULT CURRENT_DATE,
-    "order_currency" VARCHAR(3),
+    "order_currency" VARCHAR(3) NOT NULL,
     "order_total" NUMERIC(13,2) DEFAULT 0,
     "giftcard" VARCHAR(30),
     "promocode" VARCHAR(30),
@@ -158,12 +158,12 @@ CREATE TABLE IF NOT EXISTS "order"
 CREATE TABLE IF NOT EXISTS "order_line" 
   ("order_id" INTEGER NOT NULL,
   "line_num" INTEGER NOT NULL,
-    "product_code" VARCHAR(20),
+    "product_code" VARCHAR(20) NOT NULL,
     "product_name" VARCHAR(150),
     "product_color" VARCHAR(3),
     "product_size" VARCHAR(10),
-    "quantity" INTEGER,
-    "product_price" NUMERIC(13,2),
+    "quantity" INTEGER NOT NULL,
+    "product_price" NUMERIC(13,2) NOT NULL,
     "line_total" NUMERIC(13,2),
     "line_status" VARCHAR(1),
     PRIMARY KEY ("order_id", "line_num"),
@@ -188,6 +188,7 @@ CREATE TABLE IF NOT EXISTS "cart"
     "product_color" VARCHAR(3),
     "product_size" VARCHAR(10),
     "quantity" INTEGER NOT NULL,
+    "product_hexcolor" VARCHAR(7),
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_users"
         FOREIGN KEY("customer_id")
